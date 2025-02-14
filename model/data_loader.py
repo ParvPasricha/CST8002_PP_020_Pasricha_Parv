@@ -24,3 +24,17 @@ def load_crude_runs(file_path: str):
         print(f"Unexpected error: {e}")
 
     return records
+
+
+def save_crude_runs(file_path, records):
+    fieldnames = ["Week End", "Crude Volumes For The Week"]
+    
+    try:
+        with open(file_path, 'w', newline='', encoding='utf-8') as file:
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            writer.writeheader()
+            for record in records:
+                writer.writerow({"Week End": record.date, "Crude Volumes For The Week": record.crude_runs})
+        print("Data successfully saved to file.")
+    except Exception as e:
+        print(f"Error saving data: {e}")
