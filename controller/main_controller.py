@@ -12,20 +12,31 @@ from model.crude_run import CrudeRunRecord
 from view.display_view import display_records, display_statistics
 from controller.statistics_controller import calculate_statistics  # Import the function
 
-
 # Correct path to the CSV file inside the 'data' folder
 file_path = os.path.join(BASE_DIR, "data", "crude-runs-weekly.csv")
 
 # Load dataset
 crude_run_records = load_crude_runs(file_path)
 
-# Display records
-if crude_run_records:
-    print("\nLoaded Crude Run Records:\n")
-    display_records(crude_run_records[:5])  # Show first 5 records
+def main():
+    """Interactive menu for user to view crude run data."""
+    while True:
+        print("\n--- Crude Runs Data Viewer ---")
+        print("1. View first 5 records")
+        print("2. View statistics")
+        print("3. Exit")
+        choice = input("Enter your choice: ")
 
-    # Compute and display statistics
-    avg_crude, max_crude, min_crude = calculate_statistics(crude_run_records)
-    display_statistics(avg_crude, max_crude, min_crude)
-else:
-    print("\nNo records were loaded. Please check the file and try again.")
+        if choice == "1":
+            display_records(crude_run_records[:5])  # Show first 5 records
+        elif choice == "2":
+            avg_crude, max_crude, min_crude = calculate_statistics(crude_run_records)
+            display_statistics(avg_crude, max_crude, min_crude)
+        elif choice == "3":
+            print("Exiting the program.")
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+if __name__ == "__main__":
+    main()
