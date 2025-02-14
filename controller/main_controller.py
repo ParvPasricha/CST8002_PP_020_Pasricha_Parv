@@ -18,6 +18,33 @@ file_path = os.path.join(BASE_DIR, "data", "crude-runs-weekly.csv")
 # Load dataset
 crude_run_records = load_crude_runs(file_path)
 
+def calculate_statistics(records):
+    """
+    Calculate statistics for crude run records.
+    Returns the average, max, and min crude run values.
+    """
+    if not records:
+        return None, None, None
+    
+    crude_values = [record.crude_runs for record in records]
+    avg_crude = sum(crude_values) / len(crude_values)
+    max_crude = max(crude_values)
+    min_crude = min(crude_values)
+
+    return avg_crude, max_crude, min_crude
+
+# Calculate statistics
+avg_crude, max_crude, min_crude = calculate_statistics(crude_run_records)
+
+# Display statistics
+if avg_crude is not None:
+    print(f"\nStatistics:")
+    print(f"Average Crude Runs: {avg_crude:.2f} Thousand Cubic Meters per Day")
+    print(f"Max Crude Runs: {max_crude:.2f} Thousand Cubic Meters per Day")
+    print(f"Min Crude Runs: {min_crude:.2f} Thousand Cubic Meters per Day")
+
+
+
 # Display records
 if crude_run_records:
     print("\nLoaded Crude Run Records:\n")
