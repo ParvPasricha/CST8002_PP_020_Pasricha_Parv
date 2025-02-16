@@ -23,13 +23,19 @@ def main():
     global crude_run_records  # Ensure we modify the global list
 
     while True:
+        print("\n====================================")
+        print("Crude Run Management System")
+        print("Developed by: Parv Pasricha")
+        print("====================================")
+        
         print("\nMenu:")
         print("1. View records (First 5)")
         print("2. Add record")
         print("3. Update record")
         print("4. Delete record")
         print("5. View Statistics")
-        print("6. Save and Exit")
+        print("6. Reload Dataset")
+        print("7. Save and Exit")
 
         choice = input("Enter your choice: ")
 
@@ -62,12 +68,19 @@ def main():
             date = input("Enter date to delete: ")
             crude_run_records = delete_crude_run(crude_run_records, date)
             print("Record deleted successfully.")
-        
+
         elif choice == "5":
             avg_crude, max_crude, min_crude = calculate_statistics(crude_run_records)
             display_statistics(avg_crude, max_crude, min_crude)
         
         elif choice == "6":
+            try:
+                crude_run_records = load_crude_runs(file_path)[:100]  # Reload up to 100 records
+                print("Dataset reloaded successfully.")
+            except FileNotFoundError:
+                print("Error: Dataset file not found.")
+
+        elif choice == "7":
             save_crude_runs(file_path, crude_run_records)
             print("Changes saved. Exiting...")
             break
