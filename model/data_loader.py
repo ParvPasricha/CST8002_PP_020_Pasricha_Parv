@@ -1,5 +1,11 @@
 import csv
-from model.crude_run import CrudeRunRecord  # Ensure correct import
+import uuid
+import os
+import sys
+
+# Add the project root directory to sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from model.crude_run import CrudeRunRecord
 
 def load_crude_runs(file_path: str):
     """
@@ -26,15 +32,27 @@ def load_crude_runs(file_path: str):
     return records
 
 
-def save_crude_runs(file_path, records):
-    fieldnames = ["Week End", "Crude Volumes For The Week"]
-    
+import os
+import csv
+import uuid
+
+def save_crude_runs(crude_run_records):
+    """Save crude run data to a new CSV file with a UUID-based name."""
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    data_dir = os.path.join(BASE_DIR, "data")
+    os.makedirs(data_dir, exist_ok=True)  # Ensure data folder exists
+
+    # Generate unique filename
+    filename = f"crude-runs-{uuid.uuid4().hex[:8]}.csv"  # Short UUID
+    file_path = os.path.join(data_dir, filename)
+
+    # Write data to file
     try:
-        with open(file_path, 'w', newline='', encoding='utf-8') as file:
-            writer = csv.DictWriter(file, fieldnames=fieldnames)
-            writer.writeheader()
-            for record in records:
-                writer.writerow({"Week End": record.date, "Crude Volumes For The Week": record.crude_runs})
-        print("Data successfully saved to file.")
+        with open(file_path, mode="w", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow(["Date", "Crude Volume"])  # CSV Header
+            for record in crude_run_records:
+                writer.writerow([record.date, getattr(record, 'crude_volume', getattr(record, 'volume', None))])  
+        print(f"Data saved successfully as {filename}")
     except Exception as e:
-        print(f"Error saving data: {e}")
+        print(f"Error saving file: {e}")

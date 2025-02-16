@@ -22,6 +22,9 @@ crude_run_records = load_crude_runs(file_path)
 def main():
     global crude_run_records  # Ensure we modify the global list
 
+    print(type(crude_run_records[0]))
+
+
     while True:
         print("\n====================================")
         print("Crude Run Management System")
@@ -29,24 +32,38 @@ def main():
         print("====================================")
         
         print("\nMenu:")
-        print("1. View records (First 5)")
-        print("2. Add record")
-        print("3. Update record")
-        print("4. Delete record")
-        print("5. View Statistics")
-        print("6. Reload Dataset")
-        print("7. Save and Exit")
+        print("1. View first N records")
+        print("2. View record by date")
+        print("3. Add record")
+        print("4. Update record")
+        print("5. Delete record")
+        print("6. View Statistics")
+        print("7. Reload Dataset")
+        print("8. Save and Exit")
 
         choice = input("Enter your choice: ")
 
         if choice == "1":
             if crude_run_records:
-                print("\nLoaded Crude Run Records (First 5):\n")
-                display_records(crude_run_records[:5])  # Show only first 5 records
+                try:
+                    num_records = int(input("Enter number of records to view: "))
+                    print("\nLoaded Crude Run Records:\n")
+                    display_records(crude_run_records[:num_records])  # Show user-defined number of records
+                except ValueError:
+                    print("Invalid input. Please enter a valid number.")
             else:
                 print("No records available.")
         
         elif choice == "2":
+            date = input("Enter date (YYYY-MM-DD) to view record: ")
+            record_found = next((record for record in crude_run_records if record.date == date), None)
+            if record_found:
+                print("\nRecord found:")
+                print(record_found)
+            else:
+                print("No record found for the given date.")
+        
+        elif choice == "3":
             date = input("Enter date (YYYY-MM-DD): ")
             try:
                 crude_value = float(input("Enter crude volume: "))
@@ -55,7 +72,7 @@ def main():
             except ValueError:
                 print("Invalid input. Please enter a valid number.")
         
-        elif choice == "3":
+        elif choice == "4":
             date = input("Enter date to update: ")
             try:
                 new_value = float(input("Enter new crude volume: "))
@@ -64,24 +81,24 @@ def main():
             except ValueError:
                 print("Invalid input. Please enter a valid number.")
 
-        elif choice == "4":
+        elif choice == "5":
             date = input("Enter date to delete: ")
             crude_run_records = delete_crude_run(crude_run_records, date)
             print("Record deleted successfully.")
 
-        elif choice == "5":
+        elif choice == "6":
             avg_crude, max_crude, min_crude = calculate_statistics(crude_run_records)
             display_statistics(avg_crude, max_crude, min_crude)
         
-        elif choice == "6":
+        elif choice == "7":
             try:
                 crude_run_records = load_crude_runs(file_path)[:100]  # Reload up to 100 records
                 print("Dataset reloaded successfully.")
             except FileNotFoundError:
                 print("Error: Dataset file not found.")
 
-        elif choice == "7":
-            save_crude_runs(file_path, crude_run_records)
+        elif choice == "8":
+            save_crude_runs(crude_run_records)
             print("Changes saved. Exiting...")
             break
 
