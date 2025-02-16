@@ -19,39 +19,62 @@ file_path = os.path.join(BASE_DIR, "data", "crude-runs-weekly.csv")
 # Load dataset
 crude_run_records = load_crude_runs(file_path)
 
-# Load dataset
-crude_run_records = load_crude_runs(file_path)
-
 def main():
+    global crude_run_records  # Ensure we modify the global list
+
     while True:
         print("\nMenu:")
-        print("1. View records")
+        print("1. View records (First 5)")
         print("2. Add record")
         print("3. Update record")
         print("4. Delete record")
-        print("5. Save and Exit")
-        
+        print("5. View Statistics")
+        print("6. Save and Exit")
+
         choice = input("Enter your choice: ")
-        
+
         if choice == "1":
-            display_records(crude_run_records)
+            if crude_run_records:
+                print("\nLoaded Crude Run Records (First 5):\n")
+                display_records(crude_run_records[:5])  # Show only first 5 records
+            else:
+                print("No records available.")
+        
         elif choice == "2":
             date = input("Enter date (YYYY-MM-DD): ")
-            crude_value = float(input("Enter crude volume: "))
-            add_crude_run(crude_run_records, date, crude_value)
+            try:
+                crude_value = float(input("Enter crude volume: "))
+                add_crude_run(crude_run_records, date, crude_value)
+                print("Record added successfully.")
+            except ValueError:
+                print("Invalid input. Please enter a valid number.")
+        
         elif choice == "3":
             date = input("Enter date to update: ")
-            new_value = float(input("Enter new crude volume: "))
-            update_crude_run(crude_run_records, date, new_value)
+            try:
+                new_value = float(input("Enter new crude volume: "))
+                update_crude_run(crude_run_records, date, new_value)
+                print("Record updated successfully.")
+            except ValueError:
+                print("Invalid input. Please enter a valid number.")
+
         elif choice == "4":
             date = input("Enter date to delete: ")
             crude_run_records = delete_crude_run(crude_run_records, date)
+            print("Record deleted successfully.")
+        
         elif choice == "5":
+            avg_crude, max_crude, min_crude = calculate_statistics(crude_run_records)
+            display_statistics(avg_crude, max_crude, min_crude)
+        
+        elif choice == "6":
             save_crude_runs(file_path, crude_run_records)
             print("Changes saved. Exiting...")
             break
+
         else:
             print("Invalid choice. Try again.")
+
 
 if __name__ == "__main__":
     main()
