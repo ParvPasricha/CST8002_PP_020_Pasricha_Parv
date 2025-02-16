@@ -3,15 +3,16 @@ from tabulate import tabulate
 
 
 def display_records(records):
-    """
-    Displays a list of crude run records.
-    """
+    """Display crude run records with the name every 10 records."""
     if not records:
-        print("\nNo records available.")
+        print("No records to display.")
         return
-    print("\nLoaded Crude Run Records:")
-    for record in records:
-        print(record)
+
+    for i, record in enumerate(records, start=1):
+        print(f"{record.date}: {record.volume}")
+        if i % 10 == 0:  # Every 10 records
+            print("\n--- Developed by: Parv Pasricha ---\n")
+
 
 def display_statistics(avg_crude, max_crude, min_crude):
     """
