@@ -11,6 +11,7 @@ class TestCrudeRunController(unittest.TestCase):
         """Test if adding a record updates the data structure correctly."""
         crude_run_records = []  # Start with an empty list
         
+        print("\n--- Developed by: Parv Pasricha ---\n")
         # Add a new record
         add_crude_run(crude_run_records, "2025-02-13", 5000.0)
         
