@@ -10,7 +10,7 @@ from controller.statistics_controller import calculate_statistics
 from controller.crude_run_controller import add_crude_run, update_crude_run, delete_crude_run
 
 # Correct path to the CSV file inside the 'data' folder
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # Move up one level
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 data_dir = os.path.join(BASE_DIR, "data")
 os.makedirs(data_dir, exist_ok=True)  # Ensure data directory exists
 file_path = os.path.join(data_dir, "crude-runs-weekly.csv")
@@ -21,8 +21,6 @@ crude_run_records = data_loader.get_data()
 
 def main():
     global crude_run_records  # Ensure we modify the global list
-
-    print(type(crude_run_records[0]))
 
     while True:
         print("\n====================================")
@@ -38,7 +36,8 @@ def main():
         print("5. Delete record")
         print("6. View statistics")
         print("7. Reload dataset")
-        print("8. Save and Exit")
+        print("8. View sorted data")
+        print("9. Save and Exit")
 
         choice = input("Enter your choice: ")
 
@@ -47,13 +46,13 @@ def main():
                 try:
                     num_records = int(input("Enter number of records to view: "))
                     print("\nLoaded Crude Run Records:\n")
-                    display_records(crude_run_records[:num_records])  # Show user-defined number of records
+                    display_records(crude_run_records[:num_records])
                 except ValueError:
                     print("Invalid input. Please enter a valid number.")
         
         elif choice == "2":
             date = input("Enter date (YYYY-MM-DD) to view record: ")
-            record_found = next((record for record in crude_run_records if record.date == date), None)
+            record_found = data_loader.search_by_key(date)
             if record_found:
                 print("\nRecord found:")
                 print(record_found)
@@ -96,6 +95,10 @@ def main():
                 print("Error: Dataset not found.")
         
         elif choice == "8":
+            sorted_records = data_loader.get_sorted_data("date")
+            display_records(sorted_records)
+        
+        elif choice == "9":
             try:
                 data_loader.save_data()
                 print("Data saved successfully. Exiting...")
@@ -107,4 +110,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
