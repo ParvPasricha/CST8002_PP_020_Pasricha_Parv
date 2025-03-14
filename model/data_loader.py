@@ -37,8 +37,18 @@ class DataLoader:
         return self.data
 
     def search_by_key(self, key):
-        """Retrieve records by key (Binary Search if sorted)."""
-        return self.data_dict.get(key, [])
+        """Retrieve records by key using Binary Search (list must be sorted)."""
+        sorted_data = self.get_sorted_data("date")
+        left, right = 0, len(sorted_data) - 1
+        while left <= right:
+            mid = (left + right) // 2
+            if sorted_data[mid].date == key:
+                return sorted_data[mid]
+            elif sorted_data[mid].date < key:
+                left = mid + 1
+            else:
+                right = mid - 1
+        return None
 
     def get_sorted_data(self, key):
         """Sort data based on a given attribute using Merge Sort."""
