@@ -51,13 +51,12 @@ def main():
                     print("Invalid input. Please enter a valid number.")
         
         elif choice == "2":
-            date = input("Enter date (YYYY-MM-DD) to view record: ")
+            date = input("Enter date (MM/DD/YYYY) to view record: ")
             record_found = data_loader.search_by_key(date)
             if record_found:
                 print("\nRecord found:")
                 print(record_found)
-            else:
-                print("No record found for the given date.")
+            
         
         elif choice == "3":
             date = input("Enter date (YYYY-MM-DD): ")

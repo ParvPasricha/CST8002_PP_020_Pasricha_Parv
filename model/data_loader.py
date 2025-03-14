@@ -1,8 +1,9 @@
 import csv
 import os
-import sys
 import uuid
+import sys
 from collections import defaultdict
+from datetime import datetime
 from model.crude_run import CrudeRunRecord
 
 class DataLoader:
@@ -12,7 +13,9 @@ class DataLoader:
         self.data_dict = defaultdict(list)
 
     def load_crude_runs(self):
-        """Load data from a CSV file into a list of CrudeRunRecord objects."""
+        """
+        Reads a CSV file and initializes CrudeRunRecord objects with validation.
+        """
         try:
             with open(self.file_path, 'r', encoding='utf-8') as file:
                 reader = csv.DictReader(file)
@@ -20,6 +23,19 @@ class DataLoader:
                     try:
                         date = row['Week End']
                         crude_runs = float(row['Crude Volumes For The Week'])
+
+                        # Validate date format (MM/DD/YYYY)
+                        try:
+                            datetime.strptime(date, "%m/%d/%Y")
+                        except ValueError:
+                            print(f"Skipping row due to invalid date format: {date}")
+                            continue
+
+                        # Validate crude volume
+                        if crude_runs < 0:
+                            print(f"Skipping row due to negative crude volume: {crude_runs}")
+                            continue
+
                         record = CrudeRunRecord(date, crude_runs)
                         self.data.append(record)
                         self.data_dict[date].append(record)
@@ -33,39 +49,11 @@ class DataLoader:
             print(f"Unexpected error: {e}")
 
     def get_data(self):
-        """Returns the list of CrudeRunRecord objects."""
+        """Returns the loaded data."""
         return self.data
 
-    def search_by_key(self, key):
-        """Retrieve all records by key using Binary Search (list must be sorted)."""
-        sorted_data = self.get_sorted_data("date")
-        left, right = 0, len(sorted_data) - 1
-        result = []
-
-        # Binary search to find one occurrence
-        while left <= right:
-            mid = (left + right) // 2
-            if sorted_data[mid].date == key:
-                # Expand left and right to find all occurrences
-                i = mid
-                while i >= 0 and sorted_data[i].date == key:
-                    result.append(sorted_data[i])
-                    i -= 1
-                i = mid + 1
-                while i < len(sorted_data) and sorted_data[i].date == key:
-                    result.append(sorted_data[i])
-                i += 1
-                return result  # Return all matching records
-            elif sorted_data[mid].date < key:
-                left = mid + 1
-            else:
-                right = mid - 1
-
-        return None  # Return None if no records match
-
-
     def get_sorted_data(self, key):
-        """Sort data based on a given attribute using Merge Sort."""
+        """Sorts data based on the given key using Merge Sort."""
         def merge_sort(arr):
             if len(arr) <= 1:
                 return arr
@@ -90,13 +78,36 @@ class DataLoader:
         
         return merge_sort(self.data)
 
+    def search_by_key(self, key):
+        """Retrieve all records by key with validation and format the output."""
+        if not key:
+            print("Error: Search key cannot be empty.")
+            return None
+
+        try:
+            search_date = datetime.strptime(key, "%m/%d/%Y").strftime("%m/%d/%Y")
+        except ValueError:
+            print("Error: Invalid date format. Use MM/DD/YYYY.")
+            return None
+
+        sorted_data = self.get_sorted_data("date")
+        results = [record for record in sorted_data if record.date == search_date]
+
+        if results:
+            print("\nMatching Records:")
+            for record in results:
+                print(f"Date: {record.date}, Crude Volume: {record.crude_runs}")
+        else:
+            print("No records found for the given date.")
+
+
+
     def save_data(self):
-        """Save crude run data to a CSV file inside the data folder with a unique name."""
+        """Save crude run data to a CSV file inside the data folder."""
         base_dir = os.path.dirname(os.path.abspath(self.file_path))
         data_dir = os.path.join(base_dir, "data")
         os.makedirs(data_dir, exist_ok=True)
-        random_filename = f"crude-runs-{uuid.uuid4().hex}.csv"
-        file_path = os.path.join(data_dir, random_filename)
+        file_path = os.path.join(data_dir, "crude-runs-weekly.csv")
 
         try:
             with open(file_path, mode="w", newline="", encoding='utf-8') as file:
@@ -107,4 +118,3 @@ class DataLoader:
             print(f"Data successfully saved to {file_path}")
         except Exception as e:
             print(f"Error saving data: {e}")
-
