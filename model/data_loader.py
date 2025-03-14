@@ -1,7 +1,9 @@
 import csv
-import uuid
 import os
+import sys
+import uuid
 from collections import defaultdict
+from model.crude_run import CrudeRunRecord
 
 class DataLoader:
     def __init__(self, file_path):
@@ -9,8 +11,8 @@ class DataLoader:
         self.data = []
         self.data_dict = defaultdict(list)
 
-    def load_data(self):
-        """Load data from a CSV file into a list and dictionary."""
+    def load_crude_runs(self):
+        """Load data from a CSV file into a list of CrudeRunRecord objects."""
         try:
             with open(self.file_path, 'r', encoding='utf-8') as file:
                 reader = csv.DictReader(file)
@@ -18,8 +20,9 @@ class DataLoader:
                     try:
                         date = row['Week End']
                         crude_runs = float(row['Crude Volumes For The Week'])
-                        self.data.append([date, crude_runs])
-                        self.data_dict[date].append(crude_runs)
+                        record = CrudeRunRecord(date, crude_runs)
+                        self.data.append(record)
+                        self.data_dict[date].append(record)
                     except KeyError as e:
                         print(f"Skipping row due to missing key: {e}")
                     except ValueError as e:
@@ -30,11 +33,15 @@ class DataLoader:
             print(f"Unexpected error: {e}")
 
     def get_data(self):
-        """Returns the raw data."""
+        """Returns the list of CrudeRunRecord objects."""
         return self.data
 
-    def get_sorted_data(self, column_index):
-        """Sort data based on the given column index using Merge Sort."""
+    def search_by_key(self, key):
+        """Retrieve records by key (Binary Search if sorted)."""
+        return self.data_dict.get(key, [])
+
+    def get_sorted_data(self, key):
+        """Sort data based on a given attribute using Merge Sort."""
         def merge_sort(arr):
             if len(arr) <= 1:
                 return arr
@@ -47,7 +54,7 @@ class DataLoader:
             sorted_list = []
             i = j = 0
             while i < len(left) and j < len(right):
-                if left[i][column_index] < right[j][column_index]:
+                if getattr(left[i], key) < getattr(right[j], key):
                     sorted_list.append(left[i])
                     i += 1
                 else:
@@ -59,24 +66,20 @@ class DataLoader:
         
         return merge_sort(self.data)
 
-    def search_by_key(self, key):
-        """Retrieve records by key (Binary Search if sorted)."""
-        return self.data_dict.get(key, [])
-
     def save_data(self):
-        """Save crude run data to a new CSV file with a UUID-based name."""
+        """Save crude run data to a CSV file inside the data folder with a unique name."""
         base_dir = os.path.dirname(os.path.abspath(self.file_path))
         data_dir = os.path.join(base_dir, "data")
         os.makedirs(data_dir, exist_ok=True)
-        
-        filename = f"crude-runs-{uuid.uuid4().hex[:8]}.csv"
-        file_path = os.path.join(data_dir, filename)
-        
+        random_filename = f"crude-runs-{uuid.uuid4().hex}.csv"
+        file_path = os.path.join(data_dir, random_filename)
+
         try:
             with open(file_path, mode="w", newline="", encoding='utf-8') as file:
                 writer = csv.writer(file)
-                writer.writerow(["Date", "Crude Volume"]) 
-                writer.writerows(self.data)
+                writer.writerow(["Week End", "Crude Volumes For The Week"])
+                for record in self.data:
+                    writer.writerow([record.date, record.crude_runs])
             print(f"Data successfully saved to {file_path}")
         except Exception as e:
             print(f"Error saving data: {e}")

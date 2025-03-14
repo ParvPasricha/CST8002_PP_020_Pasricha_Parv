@@ -4,5 +4,5 @@ Ensures model is recognized as a package.
 """
 
 # Import functions and classes for easy access
-from model.data_loader import load_crude_runs
+from model.data_loader import DataLoader
 from model.crude_run import CrudeRunRecord
