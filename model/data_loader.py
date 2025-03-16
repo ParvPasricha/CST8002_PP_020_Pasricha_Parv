@@ -100,6 +100,7 @@ class DataLoader:
         else:
             print("No records found for the given date.")
 
+        
 
 
     def save_data(self):
