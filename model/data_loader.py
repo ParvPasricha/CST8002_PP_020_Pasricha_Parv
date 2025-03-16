@@ -79,29 +79,27 @@ class DataLoader:
         return merge_sort(self.data)
 
     def search_by_key(self, key):
-        """Retrieve all records by key with validation and format the output."""
+        """Retrieve all records by key with validation."""
         if not key:
             print("Error: Search key cannot be empty.")
             return None
-
+        
         try:
             search_date = datetime.strptime(key, "%m/%d/%Y").strftime("%m/%d/%Y")
         except ValueError:
             print("Error: Invalid date format. Use MM/DD/YYYY.")
             return None
-
-        sorted_data = self.get_sorted_data("date")
-        results = [record for record in sorted_data if record.date == search_date]
-
+        
+        results = self.data_dict.get(search_date, [])
+        
         if results:
-            print("\nMatching Records:")
+            print("\nRecords found:")
             for record in results:
                 print(f"Date: {record.date}, Crude Volume: {record.crude_runs}")
         else:
             print("No records found for the given date.")
-
         
-
+        return results if results else None
 
     def save_data(self):
         """Save crude run data to a CSV file inside the data folder."""
@@ -119,3 +117,4 @@ class DataLoader:
             print(f"Data successfully saved to {file_path}")
         except Exception as e:
             print(f"Error saving data: {e}")
+

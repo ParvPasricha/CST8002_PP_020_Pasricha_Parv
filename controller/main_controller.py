@@ -68,7 +68,7 @@ def main():
                 print("Invalid input. Please enter a valid number.")
         
         elif choice == "4":
-            date = input("Enter date to update: ")
+            date = input("Enter date (MM/DD/YYYY) to update: ")
             try:
                 new_value = float(input("Enter new crude volume: "))
                 update_crude_run(crude_run_records, date, new_value)
@@ -77,7 +77,7 @@ def main():
                 print("Invalid input. Please enter a valid number.")
 
         elif choice == "5":
-            date = input("Enter date to delete: ")
+            date = input("Enter date (MM/DD/YYYY) to delete: ")
             crude_run_records = delete_crude_run(crude_run_records, date)
             print("Record deleted successfully.")
         
