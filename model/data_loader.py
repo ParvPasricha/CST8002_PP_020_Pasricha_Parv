@@ -121,31 +121,30 @@ class DataLoader:
         
         return results if results else None
 
-    def save_data(self, format='csv'):
-        """Save crude run data to a file inside the data folder in CSV or JSON format."""
-        base_dir = os.path.dirname(os.path.abspath(self.file_path))
-        data_dir = os.path.join(base_dir, "data")
-        os.makedirs(data_dir, exist_ok=True)
-        
-        if format == 'csv':
-            file_path = os.path.join(data_dir, "crude-runs-weekly.csv")
-            try:
+    def save_data(self, format='csv', file_path=None):
+        """Save crude run data to a specified file in CSV or JSON format."""
+    
+        # Use the provided file path; otherwise, save inside the 'data' folder
+        if file_path is None:
+            base_dir = os.path.dirname(os.path.abspath(self.file_path))
+            data_dir = os.path.join(base_dir, "data")
+            os.makedirs(data_dir, exist_ok=True)
+            file_path = os.path.join(data_dir, f"crude-runs-weekly.{format}")
+
+        try:
+            if format == 'csv':
                 with open(file_path, mode="w", newline="", encoding='utf-8') as file:
                     writer = csv.writer(file)
                     writer.writerow(["Week End", "Crude Volumes For The Week"])
                     for record in self.data:
                         writer.writerow([record.date, record.crude_runs])
-                print(f"Data successfully saved to {file_path}")
-            except Exception as e:
-                print(f"Error saving data: {e}")
-        elif format == 'json':
-            file_path = os.path.join(data_dir, "crude-runs-weekly.json")
-            try:
+
+            elif format == 'json':
                 with open(file_path, mode="w", encoding='utf-8') as file:
                     json.dump([{ "Week End": record.date, "Crude Volumes For The Week": record.crude_runs } for record in self.data], file, indent=4)
-                print(f"Data successfully saved to {file_path}")
-            except Exception as e:
-                print(f"Error saving data: {e}")
-        else:
-            print("Error: Unsupported format. Use 'csv' or 'json'.")
+
+            print(f"Data successfully saved to {file_path}")
+
+        except Exception as e:
+            print(f"Error saving data: {e}")
 
