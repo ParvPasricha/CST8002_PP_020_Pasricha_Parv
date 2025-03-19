@@ -3,7 +3,9 @@ import os
 import sys
 import csv
 import unittest
+import threading
 import shutil  # Required for recursive directory deletion
+import threading  # Required for concurrent testing
 
 # Ensure the module can be imported even when running tests from a different directory
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -30,7 +32,6 @@ class TestDataLoader(unittest.TestCase):
             writer.writerow(["03/15/2025", "-200"])  # Invalid: negative volume
             writer.writerow(["INVALID_DATE", "4000"])  # Invalid: incorrect date format
 
-    @classmethod
     def setUp(self):
         """Initialize DataLoader with the test file for each test case."""
         self.loader = DataLoader(self.test_file)  # Load the test dataset
@@ -67,11 +68,7 @@ class TestDataLoader(unittest.TestCase):
         self.loader.save_data(format='csv', file_path=test_save_path)  # Pass file path explicitly
 
         self.assertTrue(os.path.exists(test_save_path), f"CSV file should be created at {test_save_path}.")
-        # Verify the file was created and then clean it up
-        self.assertTrue(os.path.exists(test_save_path), "CSV file should be created.")
         os.remove(test_save_path)  # Remove test-generated file after verification
-
-
 
     def test_save_data_json(self):
         """Ensure that saving data in JSON format works within the test directory."""
@@ -81,9 +78,31 @@ class TestDataLoader(unittest.TestCase):
         self.loader.save_data(format='json', file_path=test_save_path)  # Pass file path explicitly
 
         self.assertTrue(os.path.exists(test_save_path), f"JSON file should be created at {test_save_path}.")
-        # Verify the file was created and then clean it up
-        self.assertTrue(os.path.exists(test_save_path), "JSON file should be created.")
         os.remove(test_save_path)  # Remove test-generated file after verification
+
+    def test_multithreading_load(self):
+        """Test concurrent access of crude run data using multiple threads."""
+        self.loader.load_crude_runs()  # Load data once in the main thread
+
+        def access_data():
+            """Function to simulate thread-safe access to the data."""
+            data = self.loader.get_data()
+            assert len(data) == 2  # Each thread should see only valid records
+
+        # Create multiple threads to access the data
+        threads = [threading.Thread(target=access_data) for _ in range(5)]
+
+        # Start all threads
+        for thread in threads:
+            thread.start()
+
+        # Wait for all threads to finish execution
+        for thread in threads:
+            thread.join()
+
+        # Verify that the number of records remains consistent
+        data_length = len(self.loader.get_data())
+        self.assertEqual(data_length, 2, "Data count should remain consistent despite multithreading.")
 
 
 if __name__ == '__main__':
