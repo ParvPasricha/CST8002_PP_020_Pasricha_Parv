@@ -1,7 +1,9 @@
 import csv
+import json
 import os
 import uuid
 import sys
+import threading
 from collections import defaultdict
 from datetime import datetime
 from model.crude_run import CrudeRunRecord
@@ -11,38 +13,47 @@ class DataLoader:
         self.file_path = file_path
         self.data = []
         self.data_dict = defaultdict(list)
+        self.lock = threading.Lock()  # Ensures thread-safe operations
+
+    def process_row(self, row):
+        """Processes a single row and adds it to the dataset."""
+        try:
+            date = row['Week End']
+            crude_runs = float(row['Crude Volumes For The Week'])
+
+            # Validate date format (MM/DD/YYYY)
+            datetime.strptime(date, "%m/%d/%Y")
+
+            # Validate crude volume
+            if crude_runs < 0:
+                return
+
+            record = CrudeRunRecord(date, crude_runs)
+
+            # Use lock to ensure safe access to shared data
+            with self.lock:
+                self.data.append(record)
+                self.data_dict[date].append(record)
+
+        except (KeyError, ValueError):
+            pass  # Skip invalid rows
 
     def load_crude_runs(self):
-        """
-        Reads a CSV file and initializes CrudeRunRecord objects with validation.
-        """
+        """Loads data using multithreading."""
         try:
             with open(self.file_path, 'r', encoding='utf-8') as file:
                 reader = csv.DictReader(file)
+                threads = []
+
                 for row in reader:
-                    try:
-                        date = row['Week End']
-                        crude_runs = float(row['Crude Volumes For The Week'])
+                    thread = threading.Thread(target=self.process_row, args=(row,))
+                    threads.append(thread)
+                    thread.start()
 
-                        # Validate date format (MM/DD/YYYY)
-                        try:
-                            datetime.strptime(date, "%m/%d/%Y")
-                        except ValueError:
-                            print(f"Skipping row due to invalid date format: {date}")
-                            continue
+                # Wait for all threads to complete
+                for thread in threads:
+                    thread.join()
 
-                        # Validate crude volume
-                        if crude_runs < 0:
-                            print(f"Skipping row due to negative crude volume: {crude_runs}")
-                            continue
-
-                        record = CrudeRunRecord(date, crude_runs)
-                        self.data.append(record)
-                        self.data_dict[date].append(record)
-                    except KeyError as e:
-                        print(f"Skipping row due to missing key: {e}")
-                    except ValueError as e:
-                        print(f"Skipping row due to value error: {e}")
         except FileNotFoundError:
             print(f"Error: The file '{self.file_path}' was not found.")
         except Exception as e:
@@ -53,13 +64,22 @@ class DataLoader:
         return self.data
 
     def get_sorted_data(self, key):
-        """Sorts data based on the given key using Merge Sort."""
+        """Sorts data based on the given key using multithreaded Merge Sort."""
         def merge_sort(arr):
             if len(arr) <= 1:
                 return arr
             mid = len(arr) // 2
-            left_half = merge_sort(arr[:mid])
-            right_half = merge_sort(arr[mid:])
+            left_half = arr[:mid]
+            right_half = arr[mid:]
+
+            left_thread = threading.Thread(target=lambda: merge_sort(left_half))
+            right_thread = threading.Thread(target=lambda: merge_sort(right_half))
+            
+            left_thread.start()
+            right_thread.start()
+            left_thread.join()
+            right_thread.join()
+
             return merge(left_half, right_half)
         
         def merge(left, right):
@@ -101,20 +121,31 @@ class DataLoader:
         
         return results if results else None
 
-    def save_data(self):
-        """Save crude run data to a CSV file inside the data folder."""
+    def save_data(self, format='csv'):
+        """Save crude run data to a file inside the data folder in CSV or JSON format."""
         base_dir = os.path.dirname(os.path.abspath(self.file_path))
         data_dir = os.path.join(base_dir, "data")
         os.makedirs(data_dir, exist_ok=True)
-        file_path = os.path.join(data_dir, "crude-runs-weekly.csv")
-
-        try:
-            with open(file_path, mode="w", newline="", encoding='utf-8') as file:
-                writer = csv.writer(file)
-                writer.writerow(["Week End", "Crude Volumes For The Week"])
-                for record in self.data:
-                    writer.writerow([record.date, record.crude_runs])
-            print(f"Data successfully saved to {file_path}")
-        except Exception as e:
-            print(f"Error saving data: {e}")
+        
+        if format == 'csv':
+            file_path = os.path.join(data_dir, "crude-runs-weekly.csv")
+            try:
+                with open(file_path, mode="w", newline="", encoding='utf-8') as file:
+                    writer = csv.writer(file)
+                    writer.writerow(["Week End", "Crude Volumes For The Week"])
+                    for record in self.data:
+                        writer.writerow([record.date, record.crude_runs])
+                print(f"Data successfully saved to {file_path}")
+            except Exception as e:
+                print(f"Error saving data: {e}")
+        elif format == 'json':
+            file_path = os.path.join(data_dir, "crude-runs-weekly.json")
+            try:
+                with open(file_path, mode="w", encoding='utf-8') as file:
+                    json.dump([{ "Week End": record.date, "Crude Volumes For The Week": record.crude_runs } for record in self.data], file, indent=4)
+                print(f"Data successfully saved to {file_path}")
+            except Exception as e:
+                print(f"Error saving data: {e}")
+        else:
+            print("Error: Unsupported format. Use 'csv' or 'json'.")
 
