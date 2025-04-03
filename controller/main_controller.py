@@ -100,8 +100,15 @@ def main():
             display_records(sorted_records)
         
         elif choice == "9":
-            # Visualize crude run data using a vertical bar chart
-            visualize_crude_run_data(data_loader)
+            # Get start and end date from the user
+            start_date = input("Enter start date (MM/DD/YYYY): ")
+            end_date = input("Enter end date (MM/DD/YYYY): ")
+
+            try:
+                # Call visualize function with date range
+                visualize_crude_run_data(data_loader, start_date, end_date)
+            except ValueError:
+                print("Invalid date format. Please use MM/DD/YYYY.")
 
         elif choice == "10":
             try:
