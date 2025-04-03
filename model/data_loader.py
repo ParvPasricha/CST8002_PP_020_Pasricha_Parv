@@ -9,6 +9,7 @@ from datetime import datetime
 from model.crude_run import CrudeRunRecord
 
 class DataLoader:
+
     def __init__(self, file_path):
         self.file_path = file_path
         self.data = []
@@ -62,6 +63,7 @@ class DataLoader:
     def get_data(self):
         """Returns the loaded data."""
         return self.data
+
 
     def get_sorted_data(self, key):
         """Sorts data based on the given key using multithreaded Merge Sort."""
@@ -120,6 +122,12 @@ class DataLoader:
             print("No records found for the given date.")
         
         return results if results else None
+    
+
+    def get_visualization_data(self):
+    # This method should now return the list of crude run records from 'self.data'
+        return [{"date": record.date, "crude_runs": record.crude_runs} for record in self.data]
+
 
     def save_data(self, format='csv', file_path=None):
         """Save crude run data to a specified file in CSV or JSON format."""
@@ -147,4 +155,3 @@ class DataLoader:
 
         except Exception as e:
             print(f"Error saving data: {e}")
-
