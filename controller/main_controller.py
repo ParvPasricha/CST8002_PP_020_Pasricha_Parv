@@ -7,6 +7,7 @@ from model.data_loader import DataLoader
 from model.crude_run import CrudeRunRecord
 from view.display_view import display_records, display_statistics
 from controller.statistics_controller import calculate_statistics
+from controller.visualizer_controller import visualize_crude_run_data
 from controller.crude_run_controller import add_crude_run, update_crude_run, delete_crude_run
 
 # Correct path to the CSV file inside the 'data' folder
@@ -21,7 +22,7 @@ crude_run_records = data_loader.get_data()
 
 def main():
     global crude_run_records  # Ensure we modify the global list
-
+    
     while True:
         print("\n====================================")
         print("Crude Run Management System")
@@ -37,7 +38,8 @@ def main():
         print("6. View statistics")
         print("7. Reload dataset")
         print("8. View sorted data")
-        print("9. Save and Exit")
+        print("9. Visualize crude run data (Bar chart)")
+        print("10. Save and Exit")
 
         choice = input("Enter your choice: ")
 
@@ -98,6 +100,10 @@ def main():
             display_records(sorted_records)
         
         elif choice == "9":
+            # Visualize crude run data using a vertical bar chart
+            visualize_crude_run_data(data_loader)
+
+        elif choice == "10":
             try:
                 data_loader.save_data()
                 print("Data saved successfully. Exiting...")
