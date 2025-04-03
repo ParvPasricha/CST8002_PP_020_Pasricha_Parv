@@ -67,7 +67,8 @@ class TestDataLoader(unittest.TestCase):
 
         self.loader.save_data(format='csv', file_path=test_save_path)  # Pass file path explicitly
 
-
+        self.assertTrue(os.path.exists(test_save_path), f"CSV file should be created at {test_save_path}.")
+        os.remove(test_save_path)  # Remove test-generated file after verification
 
     def test_save_data_json(self):
         """Ensure that saving data in JSON format works within the test directory."""
@@ -76,6 +77,7 @@ class TestDataLoader(unittest.TestCase):
 
         self.loader.save_data(format='json', file_path=test_save_path)  # Pass file path explicitly
 
+        
 
     def test_multithreading_load(self):
         """Test concurrent access of crude run data using multiple threads."""
