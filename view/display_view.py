@@ -1,6 +1,6 @@
 
 from tabulate import tabulate
-
+import matplotlib.pyplot as plt
 
 def display_records(records):
     """Display crude run records with the name every 10 records."""
