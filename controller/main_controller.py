@@ -39,7 +39,9 @@ def main():
         print("7. Reload dataset")
         print("8. View sorted data")
         print("9. Visualize crude run data (Bar chart)")
-        print("10. Save and Exit")
+        print("10. Filter by column/s")
+        print("11. Sort by column/s")
+        print("12. Save and Exit")
 
         choice = input("Enter your choice: ")
 
@@ -110,7 +112,29 @@ def main():
             except ValueError:
                 print("Invalid date format. Please use MM/DD/YYYY.")
 
-        elif choice == "10":
+        elif choice == '10':
+            print("\n--- Filter Options ---")
+            date = input("Enter date (MM/DD/YYYY) or press Enter to skip: ").strip()
+            min_crude = input("Enter minimum crude volume or press Enter to skip: ").strip()
+            max_crude = input("Enter maximum crude volume or press Enter to skip: ").strip()
+
+            filtered = data_loader.filter_records(
+                date_filter=date if date else None,
+                min_crude=min_crude if min_crude else None,
+                max_crude=max_crude if max_crude else None
+            )
+            display_records(filtered)
+
+        elif choice == '11':
+            print("\n--- Sort Options ---")
+            print("Enter column names to sort by (e.g., date, crude_runs)")
+            keys = input("Separate multiple keys with commas: ").replace(" ", "").split(',')
+            sorted_data = data_loader.sort_records(*keys)
+            display_records(sorted_data)
+
+
+
+        elif choice == "12":
             try:
                 data_loader.save_data()
                 print("Data saved successfully. Exiting...")
