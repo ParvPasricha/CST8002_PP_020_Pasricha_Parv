@@ -129,26 +129,36 @@ class DataLoader:
         return [{"date": record.date, "crude_runs": record.crude_runs} for record in self.data]
 
 
-    def filter_records(self, filters):
-        """
-        Filters records based on multiple column conditions
+    def filter_records(self, date_filter=None, min_crude=None, max_crude=None):
+        """Filter records by date and crude volume range."""
+        filtered = self.data
 
-        :param filters: A dictionary where keys are column names and values are the filter criteria.
-        :return: A list of filtered records.
-        """
-        filtered_data =  self.data
-        for column, value in filters.items():
-            filtered_data = [record for record in filtered_data if str(record.get(column, '')).lower() == str(value).lower()]
-        return filtered_data
+        if date_filter:
+            filtered = [r for r in filtered if r.date == date_filter]
 
-    def sort_records(self, sort_columns):
-        """
-        Sorts records based on multiple columns.
+        if min_crude is not None:
+            try:
+                min_val = float(min_crude)
+                filtered = [r for r in filtered if r.crude_runs >= min_val]
+            except ValueError:
+                pass
 
-        :param sort_columns: A list of column names to sort by (priority-wise)
-        :return: A sorted list of records.
-        """
-        return sorted(self.data, ket=lambda record: tuple(record[col] for col in sort_columns))
+        if max_crude is not None:
+            try:
+                max_val = float(max_crude)
+                filtered = [r for r in filtered if r.crude_runs <= max_val]
+            except ValueError:
+                pass
+
+        return filtered
+
+    def sort_records(self, *keys):
+        """Sorts data based on multiple columns (keys)."""
+        def sort_key(record):
+            return tuple(getattr(record, key) for key in keys)
+
+        return sorted(self.data, key=sort_key)
+
 
     def save_data(self, format='csv', file_path=None):
         """Save crude run data to a specified file in CSV or JSON format."""
