@@ -129,6 +129,27 @@ class DataLoader:
         return [{"date": record.date, "crude_runs": record.crude_runs} for record in self.data]
 
 
+    def filter_records(self, filters):
+        """
+        Filters records based on multiple column conditions
+
+        :param filters: A dictionary where keys are column names and values are the filter criteria.
+        :return: A list of filtered records.
+        """
+        filtered_data =  self.data
+        for column, value in filters.items():
+            filtered_data = [record for record in filtered_data if str(record.get(column, '')).lower() == str(value).lower()]
+        return filtered_data
+
+    def sort_records(self, sort_columns):
+        """
+        Sorts records based on multiple columns.
+
+        :param sort_columns: A list of column names to sort by (priority-wise)
+        :return: A sorted list of records.
+        """
+        return sorted(self.data, ket=lambda record: tuple(record[col] for col in sort_columns))
+
     def save_data(self, format='csv', file_path=None):
         """Save crude run data to a specified file in CSV or JSON format."""
     
